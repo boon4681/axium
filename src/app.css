@@ -126,5 +126,16 @@
 @theme {
     --font-mono: 'JetBrains Mono Variable', monospace;
     --font-weight-medium: 400;
+    --font-weight-semibold: 500;
     --shadow-resizer: 0 0 0 0.5px var(--color-blue-500);
+}
+
+.titlebar {
+    width: 100%;
+    user-select: none;
+    display: grid;
+    grid-template-columns: auto max-content;
+    top: 0;
+    left: 0;
+    right: 0;
 }

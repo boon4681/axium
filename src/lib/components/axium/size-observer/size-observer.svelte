@@ -17,4 +17,4 @@
     });
 </script>
 
-<div bind:this={ref} class="size-full absolute"></div>
+<div bind:this={ref} class="size-full absolute pointer-events-none top-0 left-0"></div>

@@ -3,7 +3,10 @@
 	import "@fontsource-variable/jetbrains-mono";
 	import "@fontsource-variable/inter";
 	import "../app.css";
+	import { AxiumContext } from "$lib/components/axium/context";
 	let { children } = $props();
 </script>
 
-{@render children()}
+<AxiumContext>
+	{@render children()}
+</AxiumContext>

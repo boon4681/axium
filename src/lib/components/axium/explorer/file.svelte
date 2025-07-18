@@ -38,7 +38,7 @@
 
 <button
     draggable="true"
-    class="w-full flex items-center gap-1 font-mono p-1 pr-8 data-[focused=true]:bg-blue-300/20 rounded"
+    class="w-full whitespace-nowrap flex items-center gap-1 font-mono p-1 pr-8 data-[focused=true]:bg-blue-300/20 rounded"
     data-focused={$focused?.id == id}
     on:click={focus}
     on:dragover={dragOver}
