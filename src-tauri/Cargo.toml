@@ -2,7 +2,7 @@
 name = "axium"
 version = "0.1.0"
 description = "A Tauri App"
-authors = ["you"]
+authors = ["boon4681"]
 edition = "2021"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
@@ -24,4 +24,22 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 tauri-plugin-fs = "2"
 tauri-plugin-dialog = "2"
+tauri-plugin-shell = "2"
+flate2 = "1.0.30"
+zip = "4.3.0"
+http = "1"
+rand = "0.8"
+futures-util = "0.3"
+tauri-plugin-localhost = "2"
+tauri-plugin-websocket = "2"
+tokio = { version = "1", features = ["full"] }
+tokio-tungstenite = { version = "0.27" }
+log = "0.4"
+thiserror = "2"
 
+[features]
+default = ["rustls-tls"]
+native-tls = ["tokio-tungstenite/native-tls"]
+native-tls-vendored = ["native-tls", "tokio-tungstenite/native-tls-vendored"]
+rustls-tls = ["tokio-tungstenite/rustls-tls-webpki-roots"]
+rustls-tls-native-roots = ["tokio-tungstenite/rustls-tls-native-roots"]

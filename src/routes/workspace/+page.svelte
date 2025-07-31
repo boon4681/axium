@@ -10,19 +10,29 @@
     import Folders from "@lucide/svelte/icons/folders";
     import BookText from "@lucide/svelte/icons/book-text";
     import Play from "@lucide/svelte/icons/play";
+    import * as ContextMenu from "$lib/components/ui/context-menu/index.js";
+    import SquareTerminal from "@lucide/svelte/icons/square-terminal";
     import { invoke } from "@tauri-apps/api/core";
-    import { TEST_TREE } from "../test";
+    import { NODES_TREE, TEST_TREE } from "../test";
     import { onMount } from "svelte";
     import { AXIUM_NODES } from "$lib/components/axium/context/context";
     import type { FileNode, Folder as ExplorerFolder } from "$lib/components/axium/explorer/types";
     import { FileTab } from "$lib/components/axium/file-tab";
+    import { IO, IOC } from "$lib/components/axium/io";
+    import { Terminal } from "$lib/components/axium/terminal";
     let explorerPane: typeof Resizable.Pane;
     let innerWidth = $state(0);
     let panelMin = $derived(Math.ceil((180 / innerWidth) * 100));
-    let active_tab = $state<"explorer" | "nodes">("nodes");
+    let active_tab = $state<"explorer" | "nodes">("explorer");
 
     const nodes_context = AXIUM_NODES.get();
     let nodes_tree = $state<FileNode[]>([]);
+    let active_file_tab = $state<string>("");
+    let kuflow: any = null;
+    let root = IOC.ROOT.get();
+    let files_tree = IOC.FILES.get();
+    let metadata = IOC.METADATA.get();
+    onMount(async () => {});
     onMount(() => {
         const table = new Map<any, FileNode[]>();
         $nodes_context.map((n) => {
@@ -51,6 +61,9 @@
             }
         }
         console.log(nodes_tree);
+    });
+    $effect(() => {
+        console.log($files_tree);
     });
 </script>
 
@@ -110,29 +123,76 @@
             >
                 {#if active_tab == "explorer"}
                     <div class="h-[40px] border-b shrink-0 flex px-3 items-center text-sm">Explorer</div>
-                    <Explorer.Root tree={TEST_TREE} class="h-full pl-2 pr-0.5 pt-0.5"></Explorer.Root>
+                    <Explorer.Root root={$root} tree={$files_tree} class="h-full pl-2 pr-0.5 pt-0.5">
+                        {#snippet context_menu()}
+                            <ContextMenu.Content>
+                                <ContextMenu.Item inset>New File...</ContextMenu.Item>
+                                <ContextMenu.Item inset>New Folder...</ContextMenu.Item>
+                                <ContextMenu.Item inset>Reveal in File Explorer</ContextMenu.Item>
+                            </ContextMenu.Content>
+                        {/snippet}
+                    </Explorer.Root>
                 {/if}
                 {#if active_tab == "nodes"}
                     <div class="h-[40px] border-b shrink-0 flex px-3 items-center text-sm">Nodes</div>
-                    <Explorer.Root tree={nodes_tree} class="h-full pl-2 pr-0.5 pt-0.5"></Explorer.Root>
+                    <Explorer.Root root={""} tree={NODES_TREE} class="h-full pl-2 pr-0.5 pt-0.5"></Explorer.Root>
                 {/if}
             </Resizable.Pane>
             <Resizable.Handle
-                class="transition-all data-[active]:shadow-resizer data-[active]:bg-blue-500 shrink-0 w-[2px]"
+                class="transition-all data-[active]:shadow-resizer data-[active]:bg-blue-500 shrink-0 w-[3px]"
             />
-            <Resizable.Pane class="flex flex-col h-full">
-                <FileTab.Root></FileTab.Root>
-                <div class="w-full h-full overflow-hidden relative">
-                    <NodeEditor.Root></NodeEditor.Root>
-                    <DraggableTooltip.Root>
-                        <DraggableTooltip.Content class="flex items-center rounded p-1">
-                            <DraggableTooltip.Handle></DraggableTooltip.Handle>
-                            <Button variant="green" size="sm" class="px-4">
-                                <Play fill="white"></Play>
-                            </Button>
-                        </DraggableTooltip.Content>
-                    </DraggableTooltip.Root>
-                </div>
+            <Resizable.Pane class="flex flex-col h-full debug/border-4 border-blue-500">
+                <FileTab.Root
+                    tab={active_file_tab}
+                    onChange={(tab) => {
+                        active_file_tab = tab;
+                    }}
+                >
+                    {#snippet menu()}
+                        <FileTab.Menu name="terminal">
+                            <SquareTerminal></SquareTerminal>
+                        </FileTab.Menu>
+                    {/snippet}
+                </FileTab.Root>
+
+                {#if active_file_tab == "terminal"}
+                    <div>
+                        <Button
+                            onclick={() => {
+                                console.log("Send command");
+                                window.sio.emit("run", { yo: 100 });
+                            }}
+                        >
+                            TEST
+                        </Button>
+                    </div>
+                    <Terminal></Terminal>
+                {:else if active_file_tab != ""}
+                    <div class="w-full h-full overflow-hidden relative">
+                        <NodeEditor.Root
+                            onMount={(k) => {
+                                kuflow = k;
+                            }}
+                        ></NodeEditor.Root>
+                        <DraggableTooltip.Root>
+                            <DraggableTooltip.Content class="flex items-center rounded p-1">
+                                <DraggableTooltip.Handle></DraggableTooltip.Handle>
+                                <Button
+                                    variant="green"
+                                    size="sm"
+                                    class="px-4"
+                                    onclick={() => console.log(kuflow.export())}
+                                >
+                                    <Play fill="white"></Play>
+                                </Button>
+                            </DraggableTooltip.Content>
+                        </DraggableTooltip.Root>
+                    </div>
+                {:else}
+                    <div class="w-full h-full overflow-hidden relative flex items-center justify-center select-none">
+                        <div>Create new file or axium workflow</div>
+                    </div>
+                {/if}
             </Resizable.Pane>
         </Resizable.PaneGroup>
     </div>
